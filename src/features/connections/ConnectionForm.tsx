@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import * as Label from '@radix-ui/react-label';
 import * as Switch from '@radix-ui/react-switch';
 import { X, Loader2, CheckCircle2, XCircle, Database } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { cn } from '@/lib/utils';
 import { useConnection } from '@/hooks/useConnection';
 import type { ConnectionConfig } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,17 +14,150 @@ interface ConnectionFormProps {
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f97316', '#10b981', '#14b8a6', '#3b82f6', '#f59e0b'];
 
+const S = {
+  overlay: {
+    position: 'fixed' as const,
+    inset: 0,
+    zIndex: 50,
+    background: 'rgba(0,0,0,0.55)',
+    backdropFilter: 'blur(4px)',
+  },
+  dialog: {
+    position: 'fixed' as const,
+    left: '50%',
+    top: '50%',
+    zIndex: 50,
+    width: '100%',
+    maxWidth: 480,
+    transform: 'translate(-50%, -50%)',
+    borderRadius: 12,
+    border: '1px solid #1f2b3e',
+    background: '#141923',
+    boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+    overflow: 'hidden',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    borderBottom: '1px solid #1f2b3e',
+    padding: '14px 20px',
+  },
+  iconBox: (color: string) => ({
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    background: color,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  }),
+  title: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#cdd6e8',
+  },
+  closeBtn: {
+    marginLeft: 'auto',
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 4,
+    borderRadius: 6,
+    color: '#5a6b88',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  body: {
+    padding: '20px 20px 16px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 14,
+  },
+  label: {
+    display: 'block',
+    fontSize: 11,
+    fontWeight: 500,
+    color: '#8899bb',
+    marginBottom: 5,
+    letterSpacing: '0.03em',
+  },
+  input: {
+    width: '100%',
+    height: 34,
+    borderRadius: 6,
+    border: '1px solid #2a3a52',
+    background: '#0e1117',
+    color: '#cdd6e8',
+    fontSize: 12,
+    padding: '0 10px',
+    outline: 'none',
+    transition: 'border-color 120ms',
+  },
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTop: '1px solid #1f2b3e',
+    padding: '12px 20px',
+    gap: 8,
+  },
+  btnOutline: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    height: 30,
+    padding: '0 12px',
+    borderRadius: 6,
+    border: '1px solid #2a3a52',
+    background: 'transparent',
+    color: '#8899bb',
+    fontSize: 12,
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+  btnGhost: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    height: 30,
+    padding: '0 12px',
+    borderRadius: 6,
+    border: 'none',
+    background: 'transparent',
+    color: '#5a6b88',
+    fontSize: 12,
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+  btnPrimary: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    height: 30,
+    padding: '0 16px',
+    borderRadius: 6,
+    border: 'none',
+    background: '#6366f1',
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+};
+
 export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) {
   const [config, setConfig] = useState<ConnectionConfig>({
-    name: initial?.name ?? '',
-    host: initial?.host ?? 'localhost',
-    port: initial?.port ?? 5432,
-    database: initial?.database ?? '',
-    username: initial?.username ?? 'postgres',
+    name: '',
+    host: 'localhost',
+    port: 5432,
+    database: '',
+    username: 'postgres',
     password: '',
-    ssl: initial?.ssl ?? false,
-    group: initial?.group ?? '',
-    color: initial?.color ?? COLORS[0],
+    ssl: false,
+    group: '',
+    color: COLORS[0],
     ...initial,
   });
   const [testing, setTesting] = useState(false);
@@ -74,59 +203,66 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-0 shadow-2xl animate-in fade-in-0 zoom-in-95">
+        <Dialog.Overlay style={S.overlay} />
+        <Dialog.Content style={S.dialog}>
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-border px-6 py-4">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ backgroundColor: config.color }}
-            >
-              <Database className="h-4 w-4 text-white" />
+          <div style={S.header}>
+            <div style={S.iconBox(config.color)}>
+              <Database style={{ width: 15, height: 15, color: '#fff' }} />
             </div>
-            <Dialog.Title className="text-sm font-semibold text-foreground">
+            <Dialog.Title style={S.title}>
               {initial?.id ? 'Edit Connection' : 'New Connection'}
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="ml-auto rounded-md p-1 hover:bg-accent">
-                <X className="h-4 w-4 text-muted-foreground" />
+              <button style={S.closeBtn}>
+                <X style={{ width: 15, height: 15 }} />
               </button>
             </Dialog.Close>
           </div>
 
-          <div className="space-y-5 px-6 py-5">
-            {/* Color + Name row */}
-            <div className="flex gap-3">
-              <div className="space-y-1">
-                <Label.Root className="text-xs font-medium text-muted-foreground">Color</Label.Root>
-                <div className="flex gap-1.5">
-                  {COLORS.map((color) => (
-                    <button
-                      key={color}
-                      className={cn(
-                        'h-5 w-5 rounded-full ring-offset-1 transition-all',
-                        config.color === color && 'ring-2 ring-white'
-                      )}
-                      style={{ backgroundColor: color }}
-                      onClick={() => update('color', color)}
-                    />
-                  ))}
-                </div>
+          {/* Body */}
+          <div style={S.body}>
+            {/* Color picker */}
+            <div>
+              <span style={S.label}>Color</span>
+              <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+                {COLORS.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => update('color', color)}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: '50%',
+                      background: color,
+                      border: config.color === color ? '2px solid #fff' : '2px solid transparent',
+                      boxShadow: config.color === color ? `0 0 0 2px ${color}` : 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      flexShrink: 0,
+                      transition: 'box-shadow 100ms',
+                    }}
+                  />
+                ))}
               </div>
             </div>
 
+            {/* Name */}
             <Field label="Connection Name">
-              <Input
+              <input
+                style={S.input}
                 placeholder="My Database"
                 value={config.name}
                 onChange={(e) => update('name', e.target.value)}
               />
             </Field>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
+            {/* Host + Port */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+              <div style={{ gridColumn: 'span 2' }}>
                 <Field label="Host">
-                  <Input
+                  <input
+                    style={S.input}
                     placeholder="localhost"
                     value={config.host}
                     onChange={(e) => update('host', e.target.value)}
@@ -134,7 +270,8 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
                 </Field>
               </div>
               <Field label="Port">
-                <Input
+                <input
+                  style={S.input}
                   type="number"
                   placeholder="5432"
                   value={config.port}
@@ -143,24 +280,29 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
               </Field>
             </div>
 
+            {/* Database */}
             <Field label="Database">
-              <Input
+              <input
+                style={S.input}
                 placeholder="postgres"
                 value={config.database}
                 onChange={(e) => update('database', e.target.value)}
               />
             </Field>
 
-            <div className="grid grid-cols-2 gap-3">
+            {/* Username + Password */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <Field label="Username">
-                <Input
+                <input
+                  style={S.input}
                   placeholder="postgres"
                   value={config.username}
                   onChange={(e) => update('username', e.target.value)}
                 />
               </Field>
               <Field label="Password">
-                <Input
+                <input
+                  style={S.input}
                   type="password"
                   placeholder="••••••••"
                   value={config.password ?? ''}
@@ -169,63 +311,106 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
               </Field>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Group (optional)">
-                <Input
-                  placeholder="Production"
-                  value={config.group ?? ''}
-                  onChange={(e) => update('group', e.target.value)}
+            {/* Group */}
+            <Field label="Group (optional)">
+              <input
+                style={S.input}
+                placeholder="Production"
+                value={config.group ?? ''}
+                onChange={(e) => update('group', e.target.value)}
+              />
+            </Field>
+
+            {/* SSL */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderRadius: 6,
+                border: '1px solid #2a3a52',
+                background: '#0e1117',
+                padding: '8px 10px',
+              }}
+            >
+              <span style={{ fontSize: 12, color: '#8899bb', fontWeight: 500 }}>SSL / TLS</span>
+              <Switch.Root
+                checked={config.ssl}
+                onCheckedChange={(v) => update('ssl', v)}
+                style={{
+                  width: 36,
+                  height: 20,
+                  borderRadius: 10,
+                  border: 'none',
+                  background: config.ssl ? '#6366f1' : '#2a3a52',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  flexShrink: 0,
+                  transition: 'background 150ms',
+                }}
+              >
+                <Switch.Thumb
+                  style={{
+                    display: 'block',
+                    width: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    background: '#fff',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                    position: 'absolute',
+                    top: 2,
+                    left: config.ssl ? 18 : 2,
+                    transition: 'left 150ms',
+                  }}
                 />
-              </Field>
-              <div className="flex items-end pb-0.5">
-                <div className="flex w-full items-center justify-between rounded-md border border-border bg-transparent px-3 py-2.5">
-                  <span className="text-sm text-foreground">SSL</span>
-                  <Switch.Root
-                    checked={config.ssl}
-                    onCheckedChange={(v) => update('ssl', v)}
-                    className={cn(
-                      'relative h-5 w-9 rounded-full transition-colors',
-                      config.ssl ? 'bg-primary' : 'bg-muted'
-                    )}
-                  >
-                    <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-4" />
-                  </Switch.Root>
-                </div>
-              </div>
+              </Switch.Root>
             </div>
 
             {/* Test result */}
             {testResult && (
               <div
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-3 py-2 text-xs',
-                  testResult.ok ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                )}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 11,
+                  background: testResult.ok ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)',
+                  color: testResult.ok ? '#10b981' : '#f43f5e',
+                }}
               >
-                {testResult.ok ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                ) : (
-                  <XCircle className="h-3.5 w-3.5 shrink-0" />
-                )}
+                {testResult.ok
+                  ? <CheckCircle2 style={{ width: 13, height: 13, flexShrink: 0 }} />
+                  : <XCircle style={{ width: 13, height: 13, flexShrink: 0 }} />
+                }
                 {testResult.message}
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between border-t border-border px-6 py-4">
-            <Button variant="outline" size="sm" onClick={handleTest} disabled={testing}>
-              {testing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          <div style={S.footer}>
+            <button
+              style={{ ...S.btnOutline, opacity: testing ? 0.5 : 1 }}
+              onClick={handleTest}
+              disabled={testing}
+            >
+              {testing && <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} />}
               Test Connection
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={onClose}>
+            </button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button style={S.btnGhost} onClick={onClose}>
                 Cancel
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={saving || !config.name}>
-                {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              </button>
+              <button
+                style={{ ...S.btnPrimary, opacity: saving || !config.name ? 0.4 : 1 }}
+                onClick={handleSave}
+                disabled={saving || !config.name}
+              >
+                {saving && <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} />}
                 Save
-              </Button>
+              </button>
             </div>
           </div>
         </Dialog.Content>
@@ -236,8 +421,8 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label.Root className="text-xs font-medium text-muted-foreground">{label}</Label.Root>
+    <div>
+      <span style={S.label}>{label}</span>
       {children}
     </div>
   );

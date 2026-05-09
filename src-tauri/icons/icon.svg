@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1f2e"/>
+      <stop offset="100%" style="stop-color:#0d1117"/>
+    </linearGradient>
+    <linearGradient id="indigo" x1="0%" y1="0%" x2="135%" y2="135%">
+      <stop offset="0%" style="stop-color:#818cf8"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a5b4fc;stop-opacity:0.25"/>
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#6366f1" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+
+  <!-- Subtle glow overlay -->
+  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#glow)"/>
+
+  <!-- Elephant/cylinder DB shape (stylised) -->
+  <!-- Top ellipse cap -->
+  <ellipse cx="512" cy="310" rx="210" ry="58" fill="url(#indigo)" filter="url(#shadow)" opacity="0.95"/>
+  <!-- Cylinder body -->
+  <rect x="302" y="310" width="420" height="320" fill="#5558e3"/>
+  <!-- Mid stripe 1 -->
+  <ellipse cx="512" cy="444" rx="210" ry="50" fill="#6366f1"/>
+  <!-- Mid stripe 2 -->
+  <ellipse cx="512" cy="578" rx="210" ry="50" fill="#6366f1"/>
+  <!-- Bottom cap -->
+  <ellipse cx="512" cy="630" rx="210" ry="58" fill="#4f52d4"/>
+
+  <!-- SQL ">" prompt mark centered -->
+  <text
+    x="512"
+    y="548"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="-apple-system, 'JetBrains Mono', 'Fira Code', monospace"
+    font-size="148"
+    font-weight="700"
+    fill="#fff"
+    opacity="0.92"
+    letter-spacing="-4"
+  >▶</text>
+</svg>
