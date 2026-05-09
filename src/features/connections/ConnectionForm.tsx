@@ -152,7 +152,7 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
     name: '',
     host: 'localhost',
     port: 5432,
-    database: '',
+    database: undefined,
     username: 'postgres',
     password: '',
     ssl: false,
@@ -190,7 +190,7 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
   };
 
   const handleSave = async () => {
-    if (!config.name || !config.host || !config.database || !config.username) return;
+    if (!config.name || !config.host || !config.username) return;
     setSaving(true);
     try {
       await createConnection({ ...config, id: config.id ?? uuidv4() }, config.password ?? '');
@@ -281,12 +281,12 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
             </div>
 
             {/* Database */}
-            <Field label="Database">
+            <Field label="Database (optional)">
               <input
                 style={S.input}
-                placeholder="postgres"
-                value={config.database}
-                onChange={(e) => update('database', e.target.value)}
+                placeholder="Leave blank to pick after connecting"
+                value={config.database ?? ''}
+                onChange={(e) => update('database', e.target.value || undefined)}
               />
             </Field>
 

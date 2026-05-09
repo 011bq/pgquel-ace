@@ -10,7 +10,7 @@ pub struct ConnectionConfig {
     pub name: String,
     pub host: String,
     pub port: u16,
-    pub database: String,
+    pub database: Option<String>,
     pub username: String,
     pub password: Option<String>,
     pub ssl: bool,
@@ -28,13 +28,14 @@ pub struct ConnectionStatus {
 
 fn build_connection_string(config: &ConnectionConfig, password: &str) -> String {
     let ssl_mode = if config.ssl { "require" } else { "disable" };
+    let db = config.database.as_deref().unwrap_or(&config.username);
     format!(
         "postgresql://{}:{}@{}:{}/{}?sslmode={}",
         config.username,
         urlencoding::encode(password),
         config.host,
         config.port,
-        config.database,
+        db,
         ssl_mode
     )
 }

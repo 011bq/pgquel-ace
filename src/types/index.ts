@@ -5,7 +5,7 @@ export interface ConnectionConfig {
   name: string;
   host: string;
   port: number;
-  database: string;
+  database?: string;
   username: string;
   password?: string;
   ssl: boolean;
@@ -18,7 +18,7 @@ export interface SavedConnection {
   name: string;
   host: string;
   port: number;
-  database: string;
+  database?: string;
   username: string;
   ssl: boolean;
   group?: string;
