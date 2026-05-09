@@ -138,6 +138,7 @@ export function ConnectionList() {
       </div>
 
       <ConnectionForm
+        key={editConn?.id ?? 'new'}
         open={formOpen || !!editConn}
         onClose={() => {
           setFormOpen(false);

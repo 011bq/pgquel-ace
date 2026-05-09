@@ -32,8 +32,13 @@ export function useConnection() {
 
   const createConnection = useCallback(
     async (config: ConnectionConfig, password: string) => {
+      const isEdit = !!config.id;
       const id = config.id ?? uuidv4();
+      const existing = useConnectionStore.getState().savedConnections.find((c) => c.id === id);
       const conn: SavedConnection = {
+        isFavorite: existing?.isFavorite ?? false,
+        createdAt: existing?.createdAt ?? new Date().toISOString(),
+        ...existing,
         id,
         name: config.name,
         host: config.host,
@@ -43,8 +48,6 @@ export function useConnection() {
         ssl: config.ssl,
         group: config.group,
         color: config.color,
-        isFavorite: false,
-        createdAt: new Date().toISOString(),
       };
 
       await commands.saveConnection(conn);
@@ -58,11 +61,15 @@ export function useConnection() {
         }
       }
 
-      addConnection(conn);
+      if (isEdit) {
+        updateConnection(conn);
+      } else {
+        addConnection(conn);
+      }
       addLog('success', `Connection "${config.name}" saved`);
       return id;
     },
-    [addConnection, addLog]
+    [addConnection, updateConnection, addLog]
   );
 
   const connectTo = useCallback(
