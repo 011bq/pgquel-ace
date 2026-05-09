@@ -1,5 +1,4 @@
 mod commands;
-mod error;
 
 use commands::{connection::*, query::*, schema::*, storage::*};
 use rusqlite::Connection;
