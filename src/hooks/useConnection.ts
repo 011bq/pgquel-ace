@@ -6,6 +6,9 @@ import { useUIStore } from '@/store/uiStore';
 import type { ConnectionConfig, SavedConnection } from '@/types';
 import * as commands from '@/tauri/commands';
 
+// Session-only password cache — never persisted
+const _pwCache = new Map<string, string>();
+
 export function useConnection() {
   const { savedConnections, setSavedConnections, addConnection, updateConnection, removeConnection,
     setActiveConnection, openConnection: openInStore, closeConnection: closeInStore } = useConnectionStore();
@@ -45,7 +48,12 @@ export function useConnection() {
       await commands.saveConnection(conn);
 
       if (password) {
-        await commands.saveCredentials(config.username, password, id);
+        _pwCache.set(id, password);
+        try {
+          await commands.saveCredentials(config.username, password, id);
+        } catch {
+          // keychain optional — in-memory cache is fallback
+        }
       }
 
       addConnection(conn);
@@ -56,11 +64,12 @@ export function useConnection() {
   );
 
   const connectTo = useCallback(
-    async (config: ConnectionConfig) => {
+    async (config: ConnectionConfig, password?: string) => {
       if (!config.id) return;
       try {
         addLog('info', `Connecting to "${config.name}"...`);
-        const connectionId = await commands.openConnection(config);
+        const pw = password ?? _pwCache.get(config.id);
+        const connectionId = await commands.openConnection({ ...config, password: pw });
         openInStore(connectionId);
         setActiveConnection(connectionId);
         await commands.updateLastUsed(connectionId);

@@ -81,12 +81,14 @@ pub async fn open_connection(
 ) -> std::result::Result<String, String> {
     let connection_id = config.id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
 
-    let password = if let Some(ref pw) = config.password {
-        pw.clone()
-    } else {
-        let entry = keyring::Entry::new(&keyring_service(&connection_id), &config.username)
-            .map_err(|e| e.to_string())?;
-        entry.get_password().unwrap_or_default()
+    let password = match config.password.as_deref() {
+        Some(pw) if !pw.is_empty() => pw.to_string(),
+        _ => {
+            keyring::Entry::new(&keyring_service(&connection_id), &config.username)
+                .ok()
+                .and_then(|e| e.get_password().ok())
+                .unwrap_or_default()
+        }
     };
 
     let conn_str = build_connection_string(&config, &password);
