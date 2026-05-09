@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", "Menlo", monospace;
+  --radius: 0.5rem;
+
+  /* PgQuel dark theme */
+  --color-background: #0e1117;
+  --color-foreground: #cdd6e8;
+  --color-card: #141923;
+  --color-card-foreground: #cdd6e8;
+  --color-border: #1f2b3e;
+  --color-input: #1f2b3e;
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #1a2235;
+  --color-secondary-foreground: #8899bb;
+  --color-muted: #1a2235;
+  --color-muted-foreground: #5a6b88;
+  --color-accent: #1e2d45;
+  --color-accent-foreground: #cdd6e8;
+  --color-destructive: #f43f5e;
+  --color-destructive-foreground: #ffffff;
+  --color-popover: #141923;
+  --color-popover-foreground: #cdd6e8;
+  --color-ring: #6366f1;
+  --color-success: #10b981;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+/* Allow text selection in editor and result areas */
+.allow-select {
+  user-select: text;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
+
+/* CSS variable mappings for Tailwind v4 */
+.bg-background { background-color: var(--color-background); }
+.bg-card      { background-color: var(--color-card); }
+.bg-muted     { background-color: var(--color-muted); }
+.bg-accent    { background-color: var(--color-accent); }
+.bg-primary   { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-destructive { background-color: var(--color-destructive); }
+.bg-popover   { background-color: var(--color-popover); }
+
+.text-foreground         { color: var(--color-foreground); }
+.text-muted-foreground   { color: var(--color-muted-foreground); }
+.text-primary            { color: var(--color-primary); }
+.text-accent-foreground  { color: var(--color-accent-foreground); }
+.text-destructive        { color: var(--color-destructive); }
+.text-primary-foreground { color: var(--color-primary-foreground); }
+.text-card-foreground    { color: var(--color-card-foreground); }
+.text-secondary-foreground { color: var(--color-secondary-foreground); }
+.text-popover-foreground { color: var(--color-popover-foreground); }
+.text-destructive-foreground { color: var(--color-destructive-foreground); }
+
+.border-border { border-color: var(--color-border); }
+.ring-ring     { --tw-ring-color: var(--color-ring); }
+
+/* Run button */
+.btn-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--color-success);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 120ms;
+  letter-spacing: 0.01em;
+}
+.btn-run:hover { opacity: 0.85; }
+.btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-run .shortcut {
+  font-size: 10px;
+  opacity: 0.65;
+  font-weight: 400;
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* Icon rail */
+.icon-rail-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+.icon-rail-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-foreground);
+}
+.icon-rail-btn.active {
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary);
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoom-in-95 {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in-0 {
+  animation: fade-in 150ms ease;
+}
+
+.zoom-in-95 {
+  animation: zoom-in-95 150ms ease;
+}
