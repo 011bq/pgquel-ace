@@ -207,7 +207,7 @@ export function ConnectionForm({ open, onClose, initial }: ConnectionFormProps) 
         <Dialog.Content style={S.dialog}>
           {/* Header */}
           <div style={S.header}>
-            <div style={S.iconBox(config.color)}>
+            <div style={S.iconBox(config.color ?? COLORS[0])}>
               <Database style={{ width: 15, height: 15, color: '#fff' }} />
             </div>
             <Dialog.Title style={S.title}>

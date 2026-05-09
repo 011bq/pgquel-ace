@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useConnectionStore } from '@/store/connectionStore';
 import { useSchemaStore } from '@/store/schemaStore';
 import { useUIStore } from '@/store/uiStore';
+import { useEditorStore } from '@/store/editorStore';
 import type { ConnectionConfig, SavedConnection } from '@/types';
 import * as commands from '@/tauri/commands';
 
@@ -14,6 +15,7 @@ export function useConnection() {
     setActiveConnection, openConnection: openInStore, closeConnection: closeInStore } = useConnectionStore();
   const { setSchemas, clearConnection } = useSchemaStore();
   const { addLog } = useUIStore();
+  const { activeTabId, setTabConnection } = useEditorStore();
 
   const loadConnections = useCallback(async () => {
     try {
@@ -72,6 +74,7 @@ export function useConnection() {
         const connectionId = await commands.openConnection({ ...config, password: pw });
         openInStore(connectionId);
         setActiveConnection(connectionId);
+        if (activeTabId) setTabConnection(activeTabId, connectionId);
         await commands.updateLastUsed(connectionId);
 
         // Load schemas

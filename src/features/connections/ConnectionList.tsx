@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Database,
   Star,
@@ -8,8 +8,11 @@ import {
   Plug,
   Trash2,
   Edit2,
+  KeyRound,
+  X,
 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import * as Dialog from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { useConnectionStore } from '@/store/connectionStore';
 import { useConnection } from '@/hooks/useConnection';
@@ -20,6 +23,9 @@ import { Button } from '@/components/ui/Button';
 export function ConnectionList() {
   const [formOpen, setFormOpen] = useState(false);
   const [editConn, setEditConn] = useState<SavedConnection | null>(null);
+  const [pwPrompt, setPwPrompt] = useState<SavedConnection | null>(null);
+  const [pwValue, setPwValue] = useState('');
+  const pwInputRef = useRef<HTMLInputElement>(null);
 
   const { savedConnections, activeConnectionId, openConnectionIds } = useConnectionStore();
   const { connectTo, disconnectFrom, deleteConnection } = useConnection();
@@ -27,22 +33,42 @@ export function ConnectionList() {
   const favorites = savedConnections.filter((c) => c.isFavorite);
   const groups = groupConnections(savedConnections);
 
+  const doConnect = async (conn: SavedConnection, password?: string) => {
+    await connectTo({
+      id: conn.id,
+      name: conn.name,
+      host: conn.host,
+      port: conn.port,
+      database: conn.database,
+      username: conn.username,
+      ssl: conn.ssl,
+      group: conn.group,
+      color: conn.color,
+    }, password);
+  };
+
   const handleConnect = async (conn: SavedConnection) => {
     if (openConnectionIds.includes(conn.id)) {
       await disconnectFrom(conn.id);
     } else {
-      await connectTo({
-        id: conn.id,
-        name: conn.name,
-        host: conn.host,
-        port: conn.port,
-        database: conn.database,
-        username: conn.username,
-        ssl: conn.ssl,
-        group: conn.group,
-        color: conn.color,
-      });
+      try {
+        await doConnect(conn);
+      } catch (err) {
+        const msg = String(err);
+        if (msg.includes('password authentication') || msg.includes('authentication failed')) {
+          setPwPrompt(conn);
+          setPwValue('');
+          setTimeout(() => pwInputRef.current?.focus(), 50);
+        }
+      }
     }
+  };
+
+  const handlePwSubmit = async () => {
+    if (!pwPrompt) return;
+    const conn = pwPrompt;
+    setPwPrompt(null);
+    await doConnect(conn, pwValue);
   };
 
   return (
@@ -119,6 +145,64 @@ export function ConnectionList() {
         }}
         initial={editConn ?? undefined}
       />
+
+      {/* Password prompt */}
+      <Dialog.Root open={!!pwPrompt} onOpenChange={(o) => !o && setPwPrompt(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} />
+          <Dialog.Content
+            style={{
+              position: 'fixed', left: '50%', top: '50%', zIndex: 50,
+              width: 320, transform: 'translate(-50%, -50%)',
+              borderRadius: 10, border: '1px solid #1f2b3e',
+              background: '#141923', boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+              padding: 20,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <KeyRound style={{ width: 14, height: 14, color: '#6366f1', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#cdd6e8' }}>Enter Password</span>
+              <Dialog.Close asChild>
+                <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#5a6b88', padding: 2 }}>
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
+              </Dialog.Close>
+            </div>
+            <p style={{ fontSize: 11, color: '#5a6b88', marginBottom: 12 }}>
+              {pwPrompt?.name} · {pwPrompt?.username}
+            </p>
+            <input
+              ref={pwInputRef}
+              type="password"
+              placeholder="Password"
+              value={pwValue}
+              onChange={(e) => setPwValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && void handlePwSubmit()}
+              style={{
+                width: '100%', height: 34, borderRadius: 6,
+                border: '1px solid #2a3a52', background: '#0e1117',
+                color: '#cdd6e8', fontSize: 12, padding: '0 10px',
+                outline: 'none', marginBottom: 12,
+              }}
+              autoComplete="current-password"
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button
+                onClick={() => setPwPrompt(null)}
+                style={{ height: 30, padding: '0 12px', borderRadius: 6, border: 'none', background: 'transparent', color: '#5a6b88', fontSize: 12, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handlePwSubmit()}
+                style={{ height: 30, padding: '0 16px', borderRadius: 6, border: 'none', background: '#6366f1', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Connect
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
