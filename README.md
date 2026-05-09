@@ -2,7 +2,7 @@
   <h1>PgQuel</h1>
   <p>A fast, open-source PostgreSQL desktop client built for developers.</p>
   <p>
-    <a href="https://github.com/011bq/pgquel-ace/releases"><img alt="Release" src="https://img.shields.io/github/v/release/011bq/pgquel-ace?style=flat-square&color=6366f1" /></a>
+    <a href="https://github.com/011bq/pgquel/releases"><img alt="Release" src="https://img.shields.io/github/v/release/011bq/pgquel?style=flat-square&color=6366f1" /></a>
     <img alt="License" src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
     <img alt="Platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" />
     <img alt="Rust" src="https://img.shields.io/badge/backend-Rust-orange?style=flat-square" />
@@ -67,7 +67,7 @@ Windows: Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/
 
 **4. Clone and install**
 ```bash
-git clone https://github.com/011bq/pgquel-ace.git
+git clone https://github.com/011bq/pgquel.git
 cd pgquel
 npm install
 ```
